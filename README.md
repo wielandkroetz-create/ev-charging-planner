@@ -1,10 +1,9 @@
-# ev-charging-planner
-Smart EV charging planner using Angular, FastAPI and Azure.
+
 # EV Charging Planner
 
-A web application for planning electric vehicle charging sessions based on dynamic electricity prices.
+Smart EV charging planner based on dynamic electricity prices.
 
-## Technology Stack
+## Tech Stack
 
 - Angular
 - TypeScript
@@ -13,12 +12,24 @@ A web application for planning electric vehicle charging sessions based on dynam
 - Azure Static Web Apps
 - Azure Container Apps
 
-## Goals
+## Roadmap
 
-- Visualize day-ahead electricity prices
-- Calculate optimal charging windows
-- Deploy a complete cloud solution on Microsoft Azure
+### Phase 1
+- [x] GitHub Repository
+- [x] Azure Subscription
+- [x] Azure Resource Group
+- [ ] Angular Frontend
+- [ ] Azure Static Web App
 
-## Status
 
-🚧 Project setup started
+### Phase 2
+- [ ] Dynamic electricity price visualization
+- [ ] Charging optimization with mock data
+
+### Phase 3
+- [ ] FastAPI Backend
+- [ ] Azure Container Apps
+
+### Phase 4
+- [ ] Live day-ahead prices
+- [ ] Full charging optimization
