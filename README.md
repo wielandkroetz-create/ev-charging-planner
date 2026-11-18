@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # EvChargingPlanner
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.6.
@@ -46,14 +47,42 @@ ng test
 
 ## Running end-to-end tests
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+=======
+
+# EV Charging Planner
+
+Smart EV charging planner based on dynamic electricity prices.
+
+## Tech Stack
+
+- Angular
+- TypeScript
+- FastAPI
+- Python
+- Azure Static Web Apps
+- Azure Container Apps
+
+## Roadmap
+
+### Phase 1
+- [x] GitHub Repository
+- [x] Azure Subscription
+- [x] Azure Resource Group
+- [ ] Angular Frontend
+- [ ] Azure Static Web App
+
+
+### Phase 2
+- [ ] Dynamic electricity price visualization
+- [ ] Charging optimization with mock data
+
+### Phase 3
+- [ ] FastAPI Backend
+- [ ] Azure Container Apps
+
+### Phase 4
+- [ ] Live day-ahead prices
+- [ ] Full charging optimization
+>>>>>>> a4c2c0f82ae44ddc5e80b28ba70c83b82122aee8
