@@ -8,7 +8,8 @@ export class PlannerService {
 
   private http = inject(HttpClient);
 
-  private apiUrl = 'http://localhost:8000';
+
+  private apiUrl =  'https://ev-charging-api.whitebay-f38f1bee.germanywestcentral.azurecontainerapps.io';
 
   getPrices() {
     return this.http.get(
