@@ -2,6 +2,7 @@
 
   <header>
     <h1>EV Charging Planner</h1>
+
     <p class="subtitle">
       Smart charging based on dynamic electricity prices
     </p>
@@ -17,35 +18,78 @@
         <label>Energy to charge (kWh)</label>
         <input
           type="number"
-          placeholder="e.g. 35"
-          disabled
-        />
+          [(ngModel)]="energyKwh">
       </div>
 
       <div class="field">
-        <label>Provider surcharge (ct/kWh)</label>
+        <label>Charging Power</label>
+
+        <select [(ngModel)]="chargingPowerKw">
+          <option [ngValue]="2.3">2.3 kW (Schuko)</option>
+          <option [ngValue]="3.7">3.7 kW</option>
+          <option [ngValue]="7.4">7.4 kW</option>
+          <option [ngValue]="11">11 kW Wallbox</option>
+          <option [ngValue]="22">22 kW Wallbox</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Departure Time</label>
+
+        <input
+          type="time"
+          step="900"
+          [(ngModel)]="departureTime">
+      </div>
+
+      <div class="field">
+        <label>Maximum Charging Interruptions</label>
+
+        <select [(ngModel)]="maxInterruptions">
+          <option [ngValue]="0">0</option>
+          <option [ngValue]="1">1</option>
+          <option [ngValue]="2">2</option>
+          <option [ngValue]="3">3</option>
+          <option [ngValue]="4">4</option>
+          <option [ngValue]="5">5</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Supplier Surcharge (ct/kWh)</label>
+
         <input
           type="number"
-          placeholder="e.g. 2.5"
-          disabled
-        />
+          step="0.1"
+          [(ngModel)]="providerMarkupCt">
       </div>
 
       <div class="field">
-        <label>Optimization method</label>
-        <select disabled>
-          <option selected>Lowest Cost</option>
-          <option>Lowest CO₂</option>
-          <option>Balanced</option>
-          <option>Fast Charging</option>
+        <label>Optimization Method</label>
+
+        <select [(ngModel)]="optimizationMethod">
+
+          <option value="lowest-cost">
+            Lowest Cost
+          </option>
+
+          <option value="balanced">
+            Balanced
+          </option>
+
+          <option value="early-finish">
+            Early Finish
+          </option>
+
         </select>
       </div>
 
       <div class="field full-width">
-        <label>Day-Ahead Provider</label>
-        <button disabled>
-          Connect Provider (coming soon)
+
+        <button (click)="optimize()">
+          Optimize Charging Schedule
         </button>
+
       </div>
 
     </div>
@@ -56,111 +100,120 @@
 
     <h2>96 Quarter-Hour Day-Ahead Price Forecast</h2>
 
-    <div class="chart-container">
-
-      <div class="bar" style="height:30%"></div>
-      <div class="bar" style="height:35%"></div>
-      <div class="bar" style="height:40%"></div>
-      <div class="bar" style="height:45%"></div>
-      <div class="bar" style="height:55%"></div>
-      <div class="bar" style="height:70%"></div>
-      <div class="bar" style="height:80%"></div>
-      <div class="bar" style="height:90%"></div>
-
-      <div class="bar" style="height:85%"></div>
-      <div class="bar" style="height:75%"></div>
-      <div class="bar" style="height:60%"></div>
-      <div class="bar" style="height:45%"></div>
-
-      <div class="bar" style="height:30%"></div>
-      <div class="bar" style="height:20%"></div>
-      <div class="bar" style="height:15%"></div>
-      <div class="bar" style="height:10%"></div>
-
-      <div class="bar" style="height:12%"></div>
-      <div class="bar" style="height:15%"></div>
-      <div class="bar" style="height:20%"></div>
-      <div class="bar" style="height:25%"></div>
-
-      <div class="bar" style="height:35%"></div>
-      <div class="bar" style="height:45%"></div>
-      <div class="bar" style="height:60%"></div>
-      <div class="bar" style="height:75%"></div>
-
-      <div class="bar" style="height:85%"></div>
-      <div class="bar" style="height:90%"></div>
-      <div class="bar" style="height:80%"></div>
-      <div class="bar" style="height:70%"></div>
-
-      <div class="bar" style="height:50%"></div>
-      <div class="bar" style="height:40%"></div>
-      <div class="bar" style="height:30%"></div>
-      <div class="bar" style="height:20%"></div>
-
-      <div class="bar" style="height:15%"></div>
-      <div class="bar" style="height:10%"></div>
-      <div class="bar" style="height:8%"></div>
-      <div class="bar" style="height:5%"></div>
-
-      <div class="bar" style="height:8%"></div>
-      <div class="bar" style="height:12%"></div>
-      <div class="bar" style="height:20%"></div>
-      <div class="bar" style="height:35%"></div>
-
-      <div class="bar" style="height:50%"></div>
-      <div class="bar" style="height:70%"></div>
-      <div class="bar" style="height:85%"></div>
-      <div class="bar" style="height:95%"></div>
-
-      <div class="bar" style="height:88%"></div>
-      <div class="bar" style="height:72%"></div>
-      <div class="bar" style="height:58%"></div>
-      <div class="bar" style="height:45%"></div>
-
-      <div class="bar" style="height:35%"></div>
-      <div class="bar" style="height:25%"></div>
-      <div class="bar" style="height:20%"></div>
-      <div class="bar" style="height:18%"></div>
-
-      <div class="bar" style="height:12%"></div>
-      <div class="bar" style="height:9%"></div>
-      <div class="bar" style="height:6%"></div>
-      <div class="bar" style="height:5%"></div>
-
-      <div class="bar" style="height:6%"></div>
-      <div class="bar" style="height:12%"></div>
-      <div class="bar" style="height:18%"></div>
-      <div class="bar" style="height:30%"></div>
-
-      <div class="bar" style="height:40%"></div>
-      <div class="bar" style="height:55%"></div>
-      <div class="bar" style="height:70%"></div>
-      <div class="bar" style="height:90%"></div>
-    </div>
-
-    <div class="timescale">
-      <span>00:00</span>
-      <span>06:00</span>
-      <span>12:00</span>
-      <span>18:00</span>
-      <span>24:00</span>
-    </div>
-
-  </section>
-
-  <section class="card disabled-section">
-
-    <h2>Optimization Result</h2>
-
     <p>
-      Backend integration planned.
-      Future FastAPI service will calculate optimal charging windows.
+      Loaded prices:
+      <strong>{{ prices.length }}</strong>
     </p>
 
-    <button disabled>
-      Calculate Charging Schedule
-    </button>
+    <div style="height:420px;width:100%;">
+
+      <canvas
+        baseChart
+        [data]="chartData"
+        [options]="chartOptions"
+        [type]="'line'">
+      </canvas>
+
+    </div>
+
+    <div class="selected-slots">
+
+      @for (price of prices; track price.slot) {
+
+        <div
+          class="slot"
+          [class.selected]="selectedSlots.includes(price.slot)">
+        </div>
+
+      }
+
+    </div>
+
+    <div class="legend">
+
+      <div class="legend-item">
+        <div class="legend-color normal"></div>
+        <span>Price Timeline</span>
+      </div>
+
+      <div class="legend-item">
+        <div class="legend-color charging"></div>
+        <span>Selected Charging Window</span>
+      </div>
+
+    </div>
 
   </section>
+
+  @if (optimizationResult) {
+
+    <section class="card">
+
+      <h2>Optimization Result</h2>
+
+      <div class="result-grid">
+
+        <div>
+          <strong>Estimated Cost</strong>
+          <p>{{ optimizationResult.estimatedCostEuro }} €</p>
+        </div>
+
+        <div>
+          <strong>Delivered Energy</strong>
+          <p>{{ optimizationResult.deliveredEnergyKwh }} kWh</p>
+        </div>
+
+        <div>
+          <strong>Missing Energy</strong>
+          <p>{{ optimizationResult.missingEnergyKwh }} kWh</p>
+        </div>
+
+        <div>
+          <strong>Charging Feasible</strong>
+          <p>
+            {{ optimizationResult.chargingFeasible ? 'Yes' : 'No' }}
+          </p>
+        </div>
+
+        <div>
+          <strong>Start Time</strong>
+          <p>{{ optimizationResult.startTime }}</p>
+        </div>
+
+        <div>
+          <strong>End Time</strong>
+          <p>{{ optimizationResult.endTime }}</p>
+        </div>
+
+        <div>
+          <strong>Quarter Hours</strong>
+          <p>{{ optimizationResult.quartersNeeded }}</p>
+        </div>
+
+        <div>
+          <strong>Departure Time</strong>
+          <p>{{ departureTime }}</p>
+        </div>
+
+        <div>
+          <strong>Maximum Interruptions</strong>
+          <p>{{ maxInterruptions }}</p>
+        </div>
+
+        <div>
+          <strong>Actual Interruptions</strong>
+          <p>{{ optimizationResult.actualInterruptions }}</p>
+        </div>
+
+        <div>
+          <strong>Optimization Method</strong>
+          <p>{{ optimizationMethod }}</p>
+        </div>
+
+      </div>
+
+    </section>
+
+  }
 
 </div>

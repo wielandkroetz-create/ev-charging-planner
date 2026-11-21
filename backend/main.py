@@ -5,9 +5,15 @@ from pydantic import BaseModel
 from datetime import datetime
 import random
 
+from optimizer import (
+    optimize_schedule,
+    calculate_cost,
+    calculate_interruptions
+)
+
 app = FastAPI(
     title="EV Charging Planner API",
-    version="0.1"
+    version="0.6"
 )
 
 app.add_middleware(
@@ -15,7 +21,7 @@ app.add_middleware(
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"]
 )
 
 
@@ -24,6 +30,8 @@ class OptimizationRequest(BaseModel):
     chargingPowerKw: float
     providerMarkupCt: float
     optimizationMethod: str
+    departureTime: str
+    maxInterruptions: int
 
 
 def generate_day_ahead_prices():
@@ -35,25 +43,29 @@ def generate_day_ahead_prices():
         hour = slot // 4
         minute = (slot % 4) * 15
 
-        base = 8
+        base_price = 8
 
         if 0 <= hour < 6:
-            base += random.uniform(0, 4)
+
+            base_price += random.uniform(0, 4)
 
         elif 6 <= hour < 17:
-            base += random.uniform(8, 14)
+
+            base_price += random.uniform(8, 14)
 
         elif 17 <= hour < 22:
-            base += random.uniform(15, 28)
+
+            base_price += random.uniform(15, 28)
 
         else:
-            base += random.uniform(5, 12)
+
+            base_price += random.uniform(5, 12)
 
         prices.append(
             {
                 "slot": slot,
                 "time": f"{hour:02d}:{minute:02d}",
-                "priceCt": round(base, 2)
+                "priceCt": round(base_price, 2)
             }
         )
 
@@ -83,58 +95,124 @@ def optimize(request: OptimizationRequest):
 
     prices = generate_day_ahead_prices()
 
-    hours_needed = request.energyKwh / request.chargingPowerKw
+    #
+    # Departure Time
+    #
+
+    hour, minute = map(
+        int,
+        request.departureTime.split(":")
+    )
+
+    latest_slot = (
+        hour * 4
+    ) + (
+        minute // 15
+    )
+
+    prices = [
+
+        p
+
+        for p in prices
+
+        if p["slot"] <= latest_slot
+
+    ]
+
+    if len(prices) == 0:
+
+        return {
+            "error": "No charging slots available"
+        }
+
+    #
+    # Required quarters
+    #
+
+    hours_needed = (
+        request.energyKwh
+        / request.chargingPowerKw
+    )
 
     quarters_needed = max(
         1,
-        round((hours_needed * 60) / 15)
+        round(
+            (hours_needed * 60) / 15
+        )
     )
 
-    method = request.optimizationMethod.lower()
+    #
+    # Optimization
+    #
 
-    if method == "lowest-cost":
+    selected = optimize_schedule(
+        prices=prices,
+        method=request.optimizationMethod,
+        quarters_needed=quarters_needed,
+        max_interruptions=request.maxInterruptions
+    )
 
-        selected = sorted(
-            prices,
-            key=lambda x: x["priceCt"]
-        )[:quarters_needed]
+    #
+    # Safety fallback
+    #
 
-    elif method == "early-finish":
+    if len(selected) == 0:
 
-        selected = prices[:quarters_needed]
+        return {
+            "error":
+                "No feasible charging schedule found"
+        }
 
-    else:
-        cheapest = sorted(
-            prices,
-            key=lambda x: x["priceCt"]
-        )[:quarters_needed]
+    #
+    # Truncate if optimizer returns too many
+    #
 
-        selected = sorted(
-            cheapest,
-            key=lambda x: x["slot"]
-        )
+    if len(selected) > quarters_needed:
 
-    total_cost = 0
+        selected = selected[:quarters_needed]
 
-    for slot in selected:
+    #
+    # Statistics
+    #
 
-        price = (
-            slot["priceCt"]
-            + request.providerMarkupCt
-        )
+    interruptions = calculate_interruptions(
+        selected
+    )
 
-        energy_per_slot = (
-            request.chargingPowerKw * 0.25
-        )
-
-        total_cost += (
-            price / 100
-        ) * energy_per_slot
-
-    selected = sorted(
+    total_cost = calculate_cost(
         selected,
-        key=lambda x: x["slot"]
+        request.chargingPowerKw,
+        request.providerMarkupCt
     )
+
+    #
+    # Energy
+    #
+
+    delivered_energy = round(
+        len(selected)
+        * request.chargingPowerKw
+        * 0.25,
+        2
+    )
+
+    missing_energy = round(
+        max(
+            0,
+            request.energyKwh
+            - delivered_energy
+        ),
+        2
+    )
+
+    charging_feasible = (
+        missing_energy < 0.01
+    )
+
+    #
+    # Result
+    #
 
     return {
 
@@ -142,7 +220,19 @@ def optimize(request: OptimizationRequest):
             request.optimizationMethod,
 
         "energyKwh":
-            request.energyKwh,
+            round(
+                request.energyKwh,
+                2
+            ),
+
+        "deliveredEnergyKwh":
+            delivered_energy,
+
+        "missingEnergyKwh":
+            missing_energy,
+
+        "chargingFeasible":
+            charging_feasible,
 
         "chargingPowerKw":
             request.chargingPowerKw,
@@ -150,11 +240,20 @@ def optimize(request: OptimizationRequest):
         "providerMarkupCt":
             request.providerMarkupCt,
 
+        "departureTime":
+            request.departureTime,
+
+        "maxInterruptions":
+            request.maxInterruptions,
+
+        "actualInterruptions":
+            interruptions,
+
         "quartersNeeded":
             quarters_needed,
 
         "estimatedCostEuro":
-            round(total_cost, 2),
+            total_cost,
 
         "startTime":
             selected[0]["time"],
